@@ -3,6 +3,7 @@ import sys
 from collections import defaultdict
 import math
 
+# Command-line argument parsing
 optparser = optparse.OptionParser()
 optparser.add_option("-d", "--data", dest="train", default="data/hansards", help="Data filename prefix (default=data)")
 optparser.add_option("-e", "--english", dest="english", default="e", help="Suffix of English filename (default=e)")
@@ -10,44 +11,55 @@ optparser.add_option("-f", "--french", dest="french", default="f", help="Suffix 
 optparser.add_option("-n", "--num_sentences", dest="num_sents", default=1000, type="int", help="Number of sentences to use for training")
 optparser.add_option("-i", "--iterations", dest="iterations", default=5, type="int", help="Number of EM iterations")
 (opts, _) = optparser.parse_args()
+
+# Load data files
 f_data = f"{opts.train}.{opts.french}"
 e_data = f"{opts.train}.{opts.english}"
-
 bitext = [[sentence.strip().split() for sentence in pair] for pair in zip(open(f_data), open(e_data))][:opts.num_sents]
 
-t = defaultdict(lambda: defaultdict(lambda: 1.0)) 
+# Initialize translation probabilities uniformly for all word pairs
+t = defaultdict(lambda: defaultdict(lambda: 1.0))  # Translation probabilities P(f|e)
 
+# EM Iteration Loop
 for iteration in range(opts.iterations):
     sys.stderr.write(f"Starting iteration {iteration + 1}...\n")
-    
-    count_fe = defaultdict(float)
-    total_e = defaultdict(float)
-    s_total_f = defaultdict(float)
-    
+
+    # Initialize counts
+    count_fe = defaultdict(float)  # Counts for (f, e)
+    total_e = defaultdict(float)   # Total counts for English words
+    s_total_f = defaultdict(float)  # Sum of translation probabilities for f
+
+    # E-step: Compute expected counts
     for (n, (f, e)) in enumerate(bitext):
+        # Compute normalization for each French word
         for f_i in f:
             s_total_f[f_i] = 0.0
             for e_j in e:
                 s_total_f[f_i] += t[f_i][e_j]
-        
+
+        # Collect counts
         for f_i in f:
             for e_j in e:
                 count = t[f_i][e_j] / s_total_f[f_i]
                 count_fe[(f_i, e_j)] += count
                 total_e[e_j] += count
 
+    # M-step: Update translation probabilities
     for (f_i, e_j) in count_fe:
         t[f_i][e_j] = count_fe[(f_i, e_j)] / total_e[e_j]
-        
+
     sys.stderr.write(f"Completed iteration {iteration + 1}\n")
 
+# Output alignments
 for (f, e) in bitext:
     for i, f_i in enumerate(f):
         best_j = -1
         best_prob = 0.0
+        # Choose the best alignment j for each French word f_i
         for j, e_j in enumerate(e):
             if t[f_i][e_j] > best_prob:
                 best_prob = t[f_i][e_j]
                 best_j = j
+        # Output the alignment pair
         sys.stdout.write(f"{i}-{best_j} ")
     sys.stdout.write("\n")
