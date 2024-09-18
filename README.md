@@ -1,24 +1,12 @@
-There are three python programs here (`-h` for usage):
+## Program
 
-- `./align` aligns words.
+**`align`**  
+  Performs automatic word alignment between English and French using the probabilistic models IBM Model 1 and Model 2. Aligns words in parallel sentences that support multiple iterations of Expectation Maximization to improve the accuracy of word alignments. The customized command-line options we have include:
 
-- `./check-alignments` checks that the entire dataset is aligned, and
-  that there are no out-of-bounds alignment points.
+  - `-d, --data` : Data file prefix (default: `data/hansards`)
+  - `-e, --english` : Suffix of the English file (default: `e`)
+  - `-f, --french` : Suffix of the French file (default: `f`)
+  - `-n, --num_sentences` : Number of sentences to use for training (default: 1000)
+  - `-i, --iterations` : Number of EM iterations (default: 5)
 
-- `./score-alignments` computes alignment error rate.
-
-The commands work in a pipeline. For instance:
-
-   > ./align -t 0.9 -n 1000 | ./check | ./grade -n 5
-
-The `data` directory contains a fragment of the Canadian Hansards,
-aligned by Ulrich Germann:
-
-- `hansards.e` is the English side.
-
-- `hansards.f` is the French side.
-
-- `hansards.a` is the alignment of the first 37 sentences. The 
-  notation i-j means the word as position i of the French is 
-  aligned to the word at position j of the English. Notation 
-  i?j means they are probably aligned. Positions are 0-indexed.
+  For example: ./align -n 1000 -i 10 to run the alignment model on 1000 sentence pairs and perform 10 iterations of EM
