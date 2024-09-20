@@ -12,3 +12,5 @@
   For example: python align -n 1000 -i 10 > alignment.a to run the alignment model on 1000 sentence pairs and perform 10 iterations of EM, and store the output in alignment.a
 
   Run python score-alignments < alignment.a to compute accuracy.
+
+  To run IBM_model 1, uncomment the function at the bottom of the file and comment the IBM model 2. 
